@@ -1,2 +1,2 @@
 # regrep
-an egrep implementation in rust
+an `egrep` implementation in rust
