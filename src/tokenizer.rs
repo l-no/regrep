@@ -48,20 +48,16 @@ impl Token {
 // /// /////////////////////////////////////////////////////////////////////////////
 // the closure that makes sure take_while in tokenize grabs enough of the iterator /
 // /// /////////////////////////////////////////////////////////////////////////////
-fn take_while_closure1() -> Box<Fn(&char) -> bool> {
-    Box::new( |x| *x != ')' )
-}
-
-// https://play.rust-lang.org/?gist=47d2df45a1e31b0358497ae81052841d&version=nightly&backtrace=0
-fn take_while_closure(paren_count: u32) -> Box<FnMut(&char) -> bool> { 
+fn take_while_closure(mut paren_count: Box<u32>) -> Box<FnMut(&char) -> bool> { 
     Box::new(
         move |c| {
             match *c {
-                '(' => paren_count += 1,
-                ')' => paren_count -= 1,
+                '(' => *paren_count += 1,
+                ')' => *paren_count -= 1,
                 _ => {},
             }
-            if paren_count == 0 {
+            let ret: bool;
+            if *paren_count == 0 {
                 false
             }
             else {
@@ -78,8 +74,8 @@ fn tokenize(regex: &str, terminator: Option<char> ) -> Token {
     while let Some(c) = iter.next() {
         match c {
             '(' => { 
-                let mut paren_count = 1;
-                let sub_regex = (&mut iter).take_while(&*take_while_closure(paren_count)).collect::<String>();
+                let mut paren_count: Box<u32> = Box::new(1);
+                let sub_regex = (&mut iter).take_while(&mut *take_while_closure(paren_count)).collect::<String>();
                 //let sub_regex = (&mut iter).take_while(&*take_while_closure1()).collect::<String>();
                 root_token.push_token( tokenize(sub_regex.as_str(), Some(')')) );
             }
@@ -103,7 +99,7 @@ fn tokenize(regex: &str, terminator: Option<char> ) -> Token {
 
 #[test]
 fn test() {
-    let token = tokenize("h(e(l)lo)", None);
+    let token = tokenize("(hello)+.,h+x", None);
     token.print();
     println!("");
 }

@@ -1,2 +1,5 @@
 # regrep
-an `egrep` implementation in rust
+A regex implementation in rust. WIP
+
+--------------------
+`rust 1.11`
