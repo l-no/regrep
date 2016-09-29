@@ -1,12 +1,12 @@
-enum TokenInternal {
+pub enum TokenInternal {
     Literal(char),
     Complex(Vec<Token>),
 }
 
 use self::TokenInternal::*;
 
-struct Token {
-    internal: TokenInternal,
+pub struct Token {
+    pub internal: TokenInternal,
 }
 
 impl Token {
@@ -26,7 +26,7 @@ impl Token {
     }
 
     #[test]
-    fn print(&self) {
+    pub fn print(&self) {
         match self.internal {
             Literal(ref c) => print!("{}", c),
             Complex(ref v) => {
@@ -67,7 +67,10 @@ fn take_while_closure(mut paren_count: Box<u32>) -> Box<FnMut(&char) -> bool> {
     )
 }
 
-fn tokenize(regex: &str, terminator: Option<char> ) -> Token {
+// the 'terminator' is used for recursive calls to the function 
+// i.e. determining how far the subregex goes. For a normal call,
+// it should be None
+pub fn tokenize(regex: &str, terminator: Option<char> ) -> Token {
     let mut root_token = Token::new_complex();    
     let mut iter = regex.chars();
 
@@ -76,7 +79,6 @@ fn tokenize(regex: &str, terminator: Option<char> ) -> Token {
             '(' => { 
                 let mut paren_count: Box<u32> = Box::new(1);
                 let sub_regex = (&mut iter).take_while(&mut *take_while_closure(paren_count)).collect::<String>();
-                //let sub_regex = (&mut iter).take_while(&*take_while_closure1()).collect::<String>();
                 root_token.push_token( tokenize(sub_regex.as_str(), Some(')')) );
             }
             _ => { 
@@ -97,6 +99,7 @@ fn tokenize(regex: &str, terminator: Option<char> ) -> Token {
     return root_token;
 }
 
+#[ignore]
 #[test]
 fn test() {
     let token = tokenize("(hello)+.,h+x", None);
